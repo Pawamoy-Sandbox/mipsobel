@@ -1,0 +1,92 @@
+Données utiles à récupérer :
+  - Signature pour vérifier si le fichier est bien au format BMP
+  - Offset de l'image (adresse de début de fichier + offset = début de l'image)
+  - Largeur de l'image en pixels
+  - Hauteur de l'image en pixels
+  - Profondeur de codage : utile pour savoir combien de couleur par octet/d'octet par couleur
+  - IMPORTANT Nombre de couleurs de la palette : FOURNIT LA TAILLE DE LA PALETTE (On notera ce nombre C)
+  - Couleurs de la palette
+  - Données de l'image
+  
+Décalages respectifs de ces champs en octets depuis le début du fichier (et depuis le champ précédent) :
+  - 0 (+0)
+  - 10 (+10)
+  - 18 (+8)
+  - 22 (+4)
+  - 28 (+6)
+  - 46 (+18)
+  - 54 (+8)
+  - 54+4*C (+4*C)
+  
+Pour le codage des fonctions dans le fichier .s, j'ai repris la méthode syntaxique du TP4 !
+C'est-à-dire Nom de la fonction, Entrées, Pré-conditions, Sorties, Post-conditions, puis Prologue, Corps de la fonction et Epilogue
+Pour prologue et epilogue :
+C'est facile à faire (sauvegarder avec sw, +4 octets dans $sp à chaque valeur sauvegardée, inverse dans l'épilogue avec lw, etc...),
+et ça permettra de pas se faire chier avec quel registre utiliser dans le main, lequel ne pas utiliser avant d'entrer dans une fonction, etc...
+Pour l'entete de fonction :
+On voit tout de suite quel registre utiliser dans la fonction, lequel sera modifié (donc à sauvegarder), les préconditions pour le main, etc...
+
+
+
+Pour récupérer les données :
+- allouer un tableau de taille suffisante
+- faire une fonction:
+  - boucle de lecture, 4 octets par 4, tant que $v0 != 0
+  - à chaque lecture, copier les données du buffer $a1 dans le tas ($alloc) -> lw registre X($a1)
+									      -> sw registre X($alloc)
+									      -> addi $s0 $s0 4
+
+Pour réécrire un fichier BMP :
+Entete du fichier:
+	2o  BM
+	4o  14 + 40 + 256 (nb couleur) * 4 + (largeur*pronfondeur/8)+((largeur*pronfondeur/8)%4)*hauteur
+	4o  0
+	4o  54 + 256 (nb couleur) * 4
+
+Entete de l'image:
+	4o  40
+	4o  largeur
+	4o  hauteur
+	2o  1
+	2o  8
+	4o  0
+	4o  (largeur*pronfondeur/8)+((largeur*pronfondeur/8)%4)*hauteur
+	4o  resol hor / 0
+	4o  resol ver / 0
+	4o  256
+	4o  256 / 0
+	
+Palette:
+	4o  0,0,0,0
+	4o  ...
+	4o  255,255,255,0
+	
+Matrice:
+	matrice calculée
+
+	
+	
+	
+	
+	
+
+CONVOLUTION
+
+
+	Gx(i,j) = Fx(0,0) * A(i-1,j-1)  +  Fx(0,1) * A(i-1,j)  +  Fx(0,2) * A(i-1,j+1)
+		+ Fx(1,0) * A(i,j-1)    +  Fx(1,1) * A(i,j)    +  Fx(1,2) * A(i,j+1)
+		+ Fx(2,0) * A(i+1,j-1)  +  Fx(2,1) * A(i+1,j)  +  Fx(2,2) * A(i+1,j+1)
+	Gy(i,j) = idem avec Fy
+ 
+
+ CAD : Gx(i,j) = 1*A(i-1,j-1) + 0*A(i-1,j) - 1*A(i-1,j+1)
+               + 2*A(i,j-1)   + 0*A(i,j)   - 2*A(i,j+1)
+               + 1*A(i+1,j-1) + 0*A(i+1,j) - 1*A(i+1,j+1)
+
+     Gx(i,j) = A(i-1,j-1) - A(i-1,j+1) + 2*A(i,j-1) - 2*A(i,j+1) + A(i+1,j-1) - A(i+1,j+1)
+
+ CAD : Gy(i,j) = 1*A(i-1,j-1) + 2*A(i-1,j) + 1*A(i-1,j+1)
+               + 0*A(i,j-1)   + 0*A(i,j)   + 0*A(i,j+1)
+               - 1*A(i+1,j-1) - 2*A(i+1,j) - 1*A(i+1,j+1)
+
+     Gy(i,j) = A(i-1,j-1) + 2*A(i-1,j) + A(i-1,j+1) - A(i+1,j-1) - 2*A(i+1,j) - A(i+1,j+1)

@@ -1,0 +1,41 @@
+Format BMP
+
+Entete fichier
+	4 champs (14 octets)
+		- signature sur 2 octets
+		- taille totale fichier sur 4 octets
+		- champ réservé sur 4 octets
+		- offset de l'image sur 4 octet (décalage relatif)
+
+
+Entete image
+	11 champs (40 octets)
+		- taille de l'entete en octets sur 4 octets
+		- largeur image sur 4 octets
+		- hauteur image sur 4 octets
+		- nombre de plans sur 2 octets (tjrs 1)
+		- profondeur de codage sur 2 octets (nbr de bits pour coder une couleur, 1/4/8/16/24/32)
+		- méthode de compression sur 4 octets (0/1/2/3)
+		- taille totale de l'image en octets sur 4 octets
+		- résolution horizontale sur 4 octets
+		- résolution verticale sur 4 octets
+		- nombre de couleurs de la palette sur 4 octets
+		- nombre de couleurs importantes sur 4 octets (0 pour chaque couleur est importante)
+
+
+Palette image
+Suite de 4 octets :
+	bleu
+	vert
+	rouge
+	champ réservé
+
+
+Codage image
+Nombre de couleurs : 
+	2 -> 1 bit par pixel
+	16 -> 4 bits par pixel
+	256 -> 8 bits par pixel
+	couleurs réelles -> 24 bits par pixel
+	
+	chaque ligne comporte un nbr total d'octets multiple de 4 (complétée avec des 0)
